@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, Query
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.core import get_db
@@ -74,9 +74,11 @@ def create_new_post(
 
 @router.get("/posts", response_model=list[PostResponse])
 def read_posts(
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
-    return get_posts(db)
+    return get_posts(db, page, limit)
 
 
 @router.get("/posts/{post_id}", response_model=PostResponse)

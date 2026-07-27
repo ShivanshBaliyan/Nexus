@@ -89,8 +89,20 @@ def create_post(
     return post
 
 
-def get_posts(db: Session) -> list[Post]:
-    return db.query(Post).order_by(Post.created_at.desc()).all()
+def get_posts(
+    db: Session,
+    page: int = 1,
+    limit: int = 10,
+) -> list[Post]:
+    offset = (page - 1) * limit
+
+    return (
+        db.query(Post)
+        .order_by(Post.created_at.desc())
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
 
 
 def get_post(
