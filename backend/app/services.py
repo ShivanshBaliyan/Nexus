@@ -1,7 +1,12 @@
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
-from app.models import User
-from app.schemas import UserCreate, UserLogin
+from app.models import User, Post
+from app.schemas import (
+    UserCreate, 
+    UserLogin, 
+    PostCreate, 
+    PostUpdate,
+)
 from app.auth import (
     hash_password,
     verify_password,
@@ -64,3 +69,79 @@ def login_user(db: Session, form_data: OAuth2PasswordRequestForm) -> str:
     )
 
     return token
+
+
+def create_post(
+    db: Session,
+    post_data: PostCreate,
+    current_user: User,
+) -> Post:
+    post = Post(
+        title=post_data.title,
+        content=post_data.content,
+        author_id=current_user.id,
+    )
+
+    db.add(post)
+    db.commit()
+    db.refresh(post)
+
+    return post
+
+
+def get_posts(db: Session) -> list[Post]:
+    return db.query(Post).order_by(Post.created_at.desc()).all()
+
+
+def get_post(
+    db: Session,
+    post_id: int,
+) -> Post:
+    post = db.query(Post).filter(Post.id == post_id).first()
+
+    if post is None:
+        raise ValueError("Post not found")
+
+    return post
+
+
+def update_post(
+    db: Session,
+    post_id: int,
+    post_data: PostUpdate,
+    current_user: User,
+) -> Post:
+    post = db.query(Post).filter(Post.id == post_id).first()
+
+    if post is None:
+        raise ValueError("Post not found")
+
+    if post.author_id != current_user.id:
+        raise PermissionError("You are not allowed to edit this post")
+
+    post.title = post_data.title
+    post.content = post_data.content
+
+    db.commit()
+    db.refresh(post)
+
+    return post
+
+
+def delete_post(
+    db: Session,
+    post_id: int,
+    current_user: User,
+) -> None:
+    post = db.query(Post).filter(Post.id == post_id).first()
+
+    if post is None:
+        raise ValueError("Post not found")
+
+    if post.author_id != current_user.id:
+        raise PermissionError("You are not allowed to delete this post")
+
+    db.delete(post)
+    db.commit()
+
+
