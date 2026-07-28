@@ -1,11 +1,13 @@
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
-from app.models import User, Post
+from app.models import User, Post, Comment
 from app.schemas import (
     UserCreate, 
     UserLogin, 
     PostCreate, 
     PostUpdate,
+    CommentCreate,
+    CommentUpdate,
 )
 from app.auth import (
     hash_password,
@@ -157,3 +159,89 @@ def delete_post(
     db.commit()
 
 
+def create_comment(
+    db: Session,
+    post_id: int,
+    comment_data: CommentCreate,
+    current_user: User,
+) -> Comment:
+    post = db.query(Post).filter(Post.id == post_id).first()
+
+    if post is None:
+        raise ValueError("Post not found")
+
+    comment = Comment(
+        content=comment_data.content,
+        author_id=current_user.id,
+        post_id=post.id,
+    )
+
+    db.add(comment)
+    db.commit()
+    db.refresh(comment)
+
+    return comment
+
+
+def get_comments(
+    db: Session,
+    post_id: int,
+):
+    post = db.query(Post).filter(Post.id == post_id).first()
+
+    if post is None:
+        raise ValueError("Post not found")
+
+    return (
+        db.query(Comment)
+        .filter(Comment.post_id == post_id)
+        .order_by(Comment.created_at.asc())
+        .all()
+    )
+
+
+def update_comment(
+    db: Session,
+    comment_id: int,
+    comment_data: CommentUpdate,
+    current_user: User,
+) -> Comment:
+    comment = (
+        db.query(Comment)
+        .filter(Comment.id == comment_id)
+        .first()
+    )
+
+    if comment is None:
+        raise ValueError("Comment not found")
+
+    if comment.author_id != current_user.id:
+        raise PermissionError("Not authorized to update this comment")
+
+    comment.content = comment_data.content
+
+    db.commit()
+    db.refresh(comment)
+
+    return comment
+
+
+def delete_comment(
+    db: Session,
+    comment_id: int,
+    current_user: User,
+):
+    comment = (
+        db.query(Comment)
+        .filter(Comment.id == comment_id)
+        .first()
+    )
+
+    if comment is None:
+        raise ValueError("Comment not found")
+
+    if comment.author_id != current_user.id:
+        raise PermissionError("Not authorized to delete this comment")
+
+    db.delete(comment)
+    db.commit()

@@ -10,6 +10,9 @@ from app.schemas import (
     PostCreate,
     PostResponse,
     PostUpdate,
+    CommentCreate, 
+    CommentResponse,
+    CommentUpdate,
 )
 from app.services import (
     register_user, 
@@ -19,6 +22,10 @@ from app.services import (
     get_post,
     update_post,
     delete_post,
+    create_comment,
+    get_comments,
+    update_comment,
+    delete_comment,
 )
 from app.auth import get_current_user
 from app.models import User
@@ -134,6 +141,112 @@ def remove_post(
         delete_post(
             db,
             post_id,
+            current_user,
+        )
+
+        return Response(status_code=204)
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=str(e),
+        )
+
+    except PermissionError as e:
+        raise HTTPException(
+            status_code=403,
+            detail=str(e),
+        )
+
+
+@router.post(
+    "/posts/{post_id}/comments",
+    response_model=CommentResponse,
+    status_code=201,
+)
+def add_comment(
+    post_id: int,
+    comment: CommentCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        return create_comment(
+            db,
+            post_id,
+            comment,
+            current_user,
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=str(e),
+        )
+
+
+@router.get(
+    "/posts/{post_id}/comments",
+    response_model=list[CommentResponse],
+)
+def read_comments(
+    post_id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        return get_comments(db, post_id)
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=str(e),
+        )
+
+
+@router.put(
+    "/comments/{comment_id}",
+    response_model=CommentResponse,
+)
+def edit_comment(
+    comment_id: int,
+    comment: CommentUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        return update_comment(
+            db,
+            comment_id,
+            comment,
+            current_user,
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=str(e),
+        )
+
+    except PermissionError as e:
+        raise HTTPException(
+            status_code=403,
+            detail=str(e),
+        )
+
+
+@router.delete(
+    "/comments/{comment_id}",
+    status_code=204,
+)
+def remove_comment(
+    comment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        delete_comment(
+            db,
+            comment_id,
             current_user,
         )
 

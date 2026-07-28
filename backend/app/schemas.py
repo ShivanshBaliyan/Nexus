@@ -71,3 +71,36 @@ class PostAuthor(BaseModel):
     display_name: str | None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class CommentAuthor(BaseModel):
+    id: int
+    username: str
+    display_name: str | None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CommentCreate(BaseModel):
+    content: str = Field(
+        min_length=1,
+        max_length=5000,
+    )
+
+
+class CommentUpdate(BaseModel):
+    content: str = Field(
+        min_length=1,
+        max_length=5000,
+    )
+
+
+class CommentResponse(BaseModel):
+    id: int
+    content: str
+    author: CommentAuthor
+    post_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

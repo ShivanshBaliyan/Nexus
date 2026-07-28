@@ -84,6 +84,16 @@ class User(Base):
         cascade="all, delete-orphan",
     )
 
+    comments: Mapped[list["Comment"]] = relationship(
+        back_populates="author",
+        cascade="all, delete-orphan",
+    )
+
+    communities: Mapped[list["Community"]] = relationship(
+        back_populates="creator",
+        cascade="all, delete-orphan",
+    )
+
 
 class Post(Base):
     __tablename__ = "posts"
@@ -121,3 +131,103 @@ class Post(Base):
     author: Mapped["User"] = relationship(
         back_populates="posts",
     )
+
+    comments: Mapped[list["Comment"]] = relationship(
+        back_populates="post",
+        cascade="all, delete-orphan",
+    )
+
+    community_id: Mapped[int] = mapped_column(
+        ForeignKey("communities.id"),
+        nullable=False,
+    )
+
+    community: Mapped["Community"] = relationship(
+        back_populates="posts",
+    )
+
+
+class Comment(Base):
+    __tablename__ = "comments"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    content: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    author_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=False,
+    )
+
+    post_id: Mapped[int] = mapped_column(
+        ForeignKey("posts.id"),
+        nullable=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    author: Mapped["User"] = relationship(
+        back_populates="comments",
+    )
+
+    post: Mapped["Post"] = relationship(
+        back_populates="comments",
+    )
+
+
+class Community(Base):
+    __tablename__ = "communities"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    name: Mapped[str] = mapped_column(
+        String(50),
+        unique=True,
+        nullable=False,
+    )
+
+    title: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    description: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    creator_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+    )
+
+    creator: Mapped["User"] = relationship(
+        back_populates="communities",
+    )
+
+    posts: Mapped[list["Post"]] = relationship(
+        back_populates="community",
+        cascade="all, delete-orphan",
+    )
+
+
