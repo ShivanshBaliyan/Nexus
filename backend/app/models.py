@@ -1,5 +1,13 @@
 from datetime import UTC, datetime
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text
+from sqlalchemy import (
+    Boolean, 
+    DateTime, 
+    ForeignKey, 
+    String, 
+    Text, 
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -94,6 +102,16 @@ class User(Base):
         cascade="all, delete-orphan",
     )
 
+    votes: Mapped[list["Vote"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+    memberships: Mapped[list["CommunityMember"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
 
 class Post(Base):
     __tablename__ = "posts"
@@ -145,6 +163,15 @@ class Post(Base):
     community: Mapped["Community"] = relationship(
         back_populates="posts",
     )
+
+    votes: Mapped[list["Vote"]] = relationship(
+        back_populates="post",
+        cascade="all, delete-orphan",
+    )
+
+    @property
+    def score(self) -> int:
+        return sum(vote.value for vote in self.votes)
 
 
 class Comment(Base):
@@ -228,6 +255,92 @@ class Community(Base):
     posts: Mapped[list["Post"]] = relationship(
         back_populates="community",
         cascade="all, delete-orphan",
+    )
+
+    memberships: Mapped[list["CommunityMember"]] = relationship(
+        back_populates="community",
+        cascade="all, delete-orphan",
+    )
+
+    @property
+    def member_count(self) -> int:
+        return len(self.memberships)
+
+
+class Vote(Base):
+    __tablename__ = "votes"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id",
+            "post_id",
+            name="uq_user_post_vote",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+    )
+
+    value: Mapped[int] = mapped_column()
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=False,
+    )
+
+    post_id: Mapped[int] = mapped_column(
+        ForeignKey("posts.id"),
+        nullable=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )
+
+    user: Mapped["User"] = relationship(
+        back_populates="votes",
+    )
+
+    post: Mapped["Post"] = relationship(
+        back_populates="votes",
+    )
+
+
+class CommunityMember(Base):
+    __tablename__ = "community_members"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=False,
+    )
+
+    community_id: Mapped[int] = mapped_column(
+        ForeignKey("communities.id"),
+        nullable=False,
+    )
+
+    joined_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(),
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id",
+            "community_id",
+            name="uq_user_community",
+        ),
+    )
+
+    user: Mapped["User"] = relationship(
+        back_populates="memberships",
+    )
+
+    community: Mapped["Community"] = relationship(
+        back_populates="memberships",
     )
 
 

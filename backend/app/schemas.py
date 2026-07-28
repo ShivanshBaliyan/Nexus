@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from datetime import datetime
+from typing import Literal
 
 
 class UserCreate(BaseModel):
@@ -41,14 +42,18 @@ class PostCreate(BaseModel):
         description="Post content",
     )
 
+    community_id: int
+
 
 class PostResponse(BaseModel):
     id: int
     title: str
     content: str
+    community: PostCommunity
     author: PostAuthor
+    score: int
     created_at: datetime
-    updated_at: datetime
+    updated_at: datetime | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -69,6 +74,14 @@ class PostAuthor(BaseModel):
     id: int
     username: str
     display_name: str | None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PostCommunity(BaseModel):
+    id: int
+    name: str
+    title: str
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -104,3 +117,70 @@ class CommentResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class CommunityCreate(BaseModel):
+    name: str = Field(
+        min_length=3,
+        max_length=21,
+        pattern=r"^[A-Za-z0-9_]+$",
+    )
+    title: str = Field(
+        min_length=3,
+        max_length=100,
+    )
+    description: str | None = Field(
+        default=None,
+        max_length=500,
+    )
+
+
+class CommunityResponse(BaseModel):
+    id: int
+    name: str
+    title: str
+    description: str | None
+
+    creator: UserResponse
+
+    member_count: int
+
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class VoteCreate(BaseModel):
+    value: Literal[-1, 1]
+
+
+class UserProfilePost(BaseModel):
+    id: int
+    title: str
+    score: int
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserProfileCommunity(BaseModel):
+    id: int
+    name: str
+    title: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserProfileResponse(BaseModel):
+    id: int
+    username: str
+    display_name: str | None
+    bio: str | None
+    created_at: datetime
+
+    posts: list[UserProfilePost]
+    communities: list[UserProfileCommunity]
+
+    model_config = ConfigDict(from_attributes=True)
+
+

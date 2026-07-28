@@ -1,6 +1,15 @@
-from sqlalchemy.orm import Session
+from fastapi import HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.orm import Session, selectinload
 from fastapi.security import OAuth2PasswordRequestForm
-from app.models import User, Post, Comment
+from app.models import (
+    User, 
+    Post, 
+    Comment, 
+    Community, 
+    Vote,
+    CommunityMember,
+)
 from app.schemas import (
     UserCreate, 
     UserLogin, 
@@ -8,6 +17,7 @@ from app.schemas import (
     PostUpdate,
     CommentCreate,
     CommentUpdate,
+    VoteCreate,
 )
 from app.auth import (
     hash_password,
@@ -78,10 +88,19 @@ def create_post(
     post_data: PostCreate,
     current_user: User,
 ) -> Post:
+    community = db.get(Community, post_data.community_id)
+
+    if community is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Community not found.",
+        )
+
     post = Post(
         title=post_data.title,
         content=post_data.content,
         author_id=current_user.id,
+        community_id=post_data.community_id,
     )
 
     db.add(post)
@@ -100,6 +119,11 @@ def get_posts(
 
     return (
         db.query(Post)
+        .options(
+            selectinload(Post.author),
+            selectinload(Post.community),
+            selectinload(Post.votes),
+        )
         .order_by(Post.created_at.desc())
         .offset(offset)
         .limit(limit)
@@ -111,10 +135,22 @@ def get_post(
     db: Session,
     post_id: int,
 ) -> Post:
-    post = db.query(Post).filter(Post.id == post_id).first()
+    post = (
+        db.query(Post)
+        .options(
+            selectinload(Post.author),
+            selectinload(Post.community),
+            selectinload(Post.votes),
+        )
+        .filter(Post.id == post_id)
+        .first()
+    )
 
     if post is None:
-        raise ValueError("Post not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Post not found.",
+        )
 
     return post
 
@@ -245,3 +281,195 @@ def delete_comment(
 
     db.delete(comment)
     db.commit()
+
+
+def get_posts_by_community(
+    db: Session,
+    community_name: str,
+    page: int = 1,
+    limit: int = 10,
+) -> list[Post]:
+    offset = (page - 1) * limit
+
+    community = db.scalar(
+        select(Community).where(
+            Community.name == community_name
+        )
+    )
+
+    if community is None:
+        raise ValueError("Community not found")
+
+    return (
+        db.query(Post)
+        .options(
+            selectinload(Post.author),
+            selectinload(Post.community),
+            selectinload(Post.votes),
+        )
+        .filter(Post.community_id == community.id)
+        .order_by(Post.created_at.desc())
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+
+def vote_post(
+    db: Session,
+    post_id: int,
+    vote_data: VoteCreate,
+    current_user: User,
+):
+    post = db.get(Post, post_id)
+
+    if post is None:
+        raise ValueError("Post not found")
+
+    vote = db.scalar(
+        select(Vote).where(
+            Vote.user_id == current_user.id,
+            Vote.post_id == post_id,
+        )
+    )
+
+    if vote:
+        vote.value = vote_data.value
+    else:
+        vote = Vote(
+            value=vote_data.value,
+            user_id=current_user.id,
+            post_id=post_id,
+        )
+        db.add(vote)
+
+    db.commit()
+
+
+def remove_vote(
+    db: Session,
+    post_id: int,
+    current_user: User,
+):
+    vote = db.scalar(
+        select(Vote).where(
+            Vote.user_id == current_user.id,
+            Vote.post_id == post_id,
+        )
+    )
+
+    if vote is None:
+        raise ValueError("Vote not found")
+
+    db.delete(vote)
+    db.commit()
+
+
+def get_user_profile(db: Session, username: str):
+    user = db.scalar(
+        select(User)
+        .where(User.username == username)
+        .options(
+            selectinload(User.posts).selectinload(Post.votes),
+            selectinload(User.communities),
+        )
+    )
+
+    if user is None:
+        raise ValueError("User not found")
+
+    return user
+
+
+def join_community(
+    db: Session,
+    community_name: str,
+    current_user: User,
+):
+    community = db.scalar(
+        select(Community).where(
+            Community.name == community_name
+        )
+    )
+
+    if community is None:
+        raise ValueError("Community not found")
+
+    membership = db.scalar(
+        select(CommunityMember).where(
+            CommunityMember.user_id == current_user.id,
+            CommunityMember.community_id == community.id,
+        )
+    )
+
+    if membership is not None:
+        raise ValueError("Already a member")
+
+    membership = CommunityMember(
+        user_id=current_user.id,
+        community_id=community.id,
+    )
+
+    db.add(membership)
+    db.commit()
+
+
+def leave_community(
+    db: Session,
+    community_name: str,
+    current_user: User,
+):
+    community = db.scalar(
+        select(Community).where(
+            Community.name == community_name
+        )
+    )
+
+    if community is None:
+        raise ValueError("Community not found")
+
+    membership = db.scalar(
+        select(CommunityMember).where(
+            CommunityMember.user_id == current_user.id,
+            CommunityMember.community_id == community.id,
+        )
+    )
+
+    if membership is None:
+        raise ValueError("Not a member")
+
+    db.delete(membership)
+    db.commit()
+
+
+def get_feed(
+    db: Session,
+    current_user: User,
+    skip: int = 0,
+    limit: int = 10,
+):
+    community_ids = db.scalars(
+        select(CommunityMember.community_id).where(
+            CommunityMember.user_id == current_user.id
+        )
+    ).all()
+
+    if not community_ids:
+        return []
+
+    posts = db.scalars(
+        select(Post)
+        .where(Post.community_id.in_(community_ids))
+        .options(
+            selectinload(Post.author),
+            selectinload(Post.community),
+            selectinload(Post.votes),
+        )
+        .order_by(Post.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+    ).all()
+
+    return posts
+
+

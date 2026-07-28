@@ -21,5 +21,3 @@ def health():
         "status": "healthy",
         "database": "connected",
     }
-
-
