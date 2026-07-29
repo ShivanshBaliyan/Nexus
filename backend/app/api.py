@@ -28,6 +28,7 @@ from app.schemas import (
     CommunityCreate,
     VoteCreate,
     UserProfileResponse,
+    SearchResponse,
 )
 from app.services import (
     register_user, 
@@ -507,6 +508,20 @@ def get_feed(
         current_user=current_user,
         skip=skip,
         limit=limit,
+    )
+
+
+@router.get(
+    "/search",
+    response_model=SearchResponse,
+)
+def search(
+    q: str,
+    db: Session = Depends(get_db),
+):
+    return services.search(
+        db=db,
+        query=q,
     )
 
 

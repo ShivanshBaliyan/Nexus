@@ -184,3 +184,33 @@ class UserProfileResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class SearchUser(BaseModel):
+    id: int
+    username: str
+    display_name: str | None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SearchCommunity(BaseModel):
+    id: int
+    name: str
+    title: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SearchPost(BaseModel):
+    id: int
+    title: str
+    score: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SearchResponse(BaseModel):
+    users: list[SearchUser]
+    communities: list[SearchCommunity]
+    posts: list[SearchPost]
+
+

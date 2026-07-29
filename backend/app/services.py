@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.orm import Session, selectinload
 from fastapi.security import OAuth2PasswordRequestForm
 from app.models import (
@@ -471,5 +471,44 @@ def get_feed(
     ).all()
 
     return posts
+
+
+def search(
+    db: Session,
+    query: str,
+):
+    pattern = f"%{query}%"
+
+    users = db.scalars(
+        select(User).where(
+            or_(
+                User.username.ilike(pattern),
+                User.display_name.ilike(pattern),
+            )
+        )
+    ).all()
+
+    communities = db.scalars(
+        select(Community).where(
+            or_(
+                Community.name.ilike(pattern),
+                Community.title.ilike(pattern),
+            )
+        )
+    ).all()
+
+    posts = db.scalars(
+        select(Post)
+        .where(Post.title.ilike(pattern))
+        .options(
+            selectinload(Post.votes),
+        )
+    ).all()
+
+    return {
+        "users": users,
+        "communities": communities,
+        "posts": posts,
+    }
 
 
