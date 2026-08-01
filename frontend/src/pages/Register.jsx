@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 import { registerUser } from "../api/auth";
 
@@ -22,7 +22,7 @@ export default function Register() {
 
             alert("Registration successful!");
 
-            navigate("/login");
+            navigate("/auth/login");
         } catch (error) {
             console.error(error);
 
@@ -35,53 +35,86 @@ export default function Register() {
     }
 
     return (
-        <div>
-            <h1>Register</h1>
+        <div className="flex min-h-[80vh] items-center justify-center">
+            <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
+                <h1 className="mb-2 text-center text-3xl font-bold">
+                    Create Account
+                </h1>
 
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Username</label>
-                    <br />
+                <p className="mb-8 text-center text-gray-500">
+                    Join the Nexus community
+                </p>
 
-                    <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                    />
-                </div>
+                <form
+                    onSubmit={handleSubmit}
+                    className="space-y-5"
+                >
+                    <div>
+                        <label className="mb-2 block text-sm font-medium">
+                            Username
+                        </label>
 
-                <br />
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={(e) =>
+                                setUsername(e.target.value)
+                            }
+                            placeholder="Choose a username"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+                        />
+                    </div>
 
-                <div>
-                    <label>Email</label>
-                    <br />
+                    <div>
+                        <label className="mb-2 block text-sm font-medium">
+                            Email
+                        </label>
 
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                </div>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) =>
+                                setEmail(e.target.value)
+                            }
+                            placeholder="Enter your email"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+                        />
+                    </div>
 
-                <br />
+                    <div>
+                        <label className="mb-2 block text-sm font-medium">
+                            Password
+                        </label>
 
-                <div>
-                    <label>Password</label>
-                    <br />
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) =>
+                                setPassword(e.target.value)
+                            }
+                            placeholder="Create a password"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+                        />
+                    </div>
 
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                </div>
+                    <button
+                        type="submit"
+                        className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700"
+                    >
+                        Create Account
+                    </button>
+                </form>
 
-                <br />
-
-                <button type="submit">
-                    Register
-                </button>
-            </form>
+                <p className="mt-6 text-center text-sm text-gray-600">
+                    Already have an account?{" "}
+                    <Link
+                        to="/auth/login"
+                        className="font-semibold text-blue-600 hover:underline"
+                    >
+                        Login
+                    </Link>
+                </p>
+            </div>
         </div>
     );
 }

@@ -23,50 +23,90 @@ export default function CreateCommunity() {
             navigate(`/communities/${community.name}`);
         } catch (error) {
             console.error(error);
-            alert("Failed to create community.");
+
+            if (error.response?.data?.detail) {
+                alert(error.response.data.detail);
+            } else {
+                alert("Failed to create community.");
+            }
         }
     }
 
     return (
-        <div>
-            <h1>Create Community</h1>
+        <div className="flex justify-center py-10">
+            <div className="w-full max-w-3xl rounded-2xl bg-white p-8 shadow-lg">
+                <h1 className="mb-2 text-3xl font-bold">
+                    Create a Community
+                </h1>
 
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Name</label>
-                    <input
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                </div>
+                <p className="mb-8 text-gray-500">
+                    Start a new community and bring people together.
+                </p>
 
-                <br />
+                <form
+                    onSubmit={handleSubmit}
+                    className="space-y-6"
+                >
+                    <div>
+                        <label className="mb-2 block text-sm font-medium">
+                            Community Name
+                        </label>
 
-                <div>
-                    <label>Title</label>
-                    <input
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                    />
-                </div>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) =>
+                                setName(e.target.value)
+                            }
+                            placeholder="e.g. reactjs"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+                        />
 
-                <br />
+                        <p className="mt-2 text-sm text-gray-500">
+                            Only letters, numbers and underscores are allowed.
+                        </p>
+                    </div>
 
-                <div>
-                    <label>Description</label>
-                    <textarea
-                        rows={5}
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                    />
-                </div>
+                    <div>
+                        <label className="mb-2 block text-sm font-medium">
+                            Title
+                        </label>
 
-                <br />
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) =>
+                                setTitle(e.target.value)
+                            }
+                            placeholder="A short title for your community"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+                        />
+                    </div>
 
-                <button type="submit">
-                    Create Community
-                </button>
-            </form>
+                    <div>
+                        <label className="mb-2 block text-sm font-medium">
+                            Description
+                        </label>
+
+                        <textarea
+                            rows={8}
+                            value={description}
+                            onChange={(e) =>
+                                setDescription(e.target.value)
+                            }
+                            placeholder="Tell people what your community is about..."
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700"
+                    >
+                        Create Community
+                    </button>
+                </form>
+            </div>
         </div>
     );
 }

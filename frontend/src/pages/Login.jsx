@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
-import client from "../api/client";
+import { loginUser } from "../api/auth";
 import { getCurrentUser } from "../api/users";
 import { useAuth } from "../context/AuthContext";
 
@@ -16,24 +16,16 @@ export default function Login() {
         e.preventDefault();
 
         try {
-            const formData = new URLSearchParams();
-
-            formData.append("username", username);
-            formData.append("password", password);
-
-            const response = await client.post(
-                "/auth/login",
-                formData
+            const data = await loginUser(
+                username,
+                password
             );
 
-            // Save the JWT
-            login(response.data.access_token);
+            login(data.access_token);
 
-            // Fetch the logged-in user's details
             const user = await getCurrentUser();
             setUser(user);
 
-            // Redirect to the home page
             navigate("/");
         } catch (error) {
             console.error(error);
@@ -42,38 +34,70 @@ export default function Login() {
     }
 
     return (
-        <div>
-            <h1>Login</h1>
+        <div className="flex min-h-[80vh] items-center justify-center">
+            <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
+                <h1 className="mb-2 text-center text-3xl font-bold">
+                    Welcome Back
+                </h1>
 
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Username</label>
+                <p className="mb-8 text-center text-gray-500">
+                    Sign in to your Nexus account
+                </p>
 
-                    <input
-                        type="text"
-                        value={username}
-                        onChange={(e) =>
-                            setUsername(e.target.value)
-                        }
-                    />
-                </div>
+                <form
+                    onSubmit={handleSubmit}
+                    className="space-y-5"
+                >
+                    <div>
+                        <label className="mb-2 block text-sm font-medium">
+                            Username
+                        </label>
 
-                <div>
-                    <label>Password</label>
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={(e) =>
+                                setUsername(e.target.value)
+                            }
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+                            placeholder="Enter your username"
+                        />
+                    </div>
 
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) =>
-                            setPassword(e.target.value)
-                        }
-                    />
-                </div>
+                    <div>
+                        <label className="mb-2 block text-sm font-medium">
+                            Password
+                        </label>
 
-                <button type="submit">
-                    Login
-                </button>
-            </form>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) =>
+                                setPassword(e.target.value)
+                            }
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+                            placeholder="Enter your password"
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700"
+                    >
+                        Login
+                    </button>
+                </form>
+
+                <p className="mt-6 text-center text-sm text-gray-600">
+                    Don't have an account?{" "}
+                    <Link
+                        to="/register"
+                        className="font-semibold text-blue-600 hover:underline"
+                    >
+                        Register
+                    </Link>
+                </p>
+            </div>
         </div>
     );
 }

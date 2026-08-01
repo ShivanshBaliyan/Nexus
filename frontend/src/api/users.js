@@ -6,6 +6,9 @@ export async function getCurrentUser() {
 }
 
 export async function getUserProfile(username) {
-    const response = await client.get(`/users/${username}`);
+    const response = await client.get(
+        `/users/${username}`
+    );
+
     return response.data;
 }

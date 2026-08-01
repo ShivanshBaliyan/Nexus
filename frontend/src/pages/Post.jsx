@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import client from "../api/client";
+import { Link, useParams } from "react-router-dom";
 
 import {
     getPost,
     getComments,
     createComment,
+    votePost,
 } from "../api/posts";
 
 import CommentCard from "../components/CommentCard";
@@ -18,31 +18,16 @@ export default function Post() {
     const [content, setContent] = useState("");
     const [loading, setLoading] = useState(true);
 
-    async function upvote() {
-            try {
-                await client.post(`/posts/${post.id}/vote`, {
-                    value: 1,
-                });
-    
-                window.location.reload();
-            } catch (error) {
-                console.error(error);
-            }
-            // await onVote(post.id, 1);
+    async function handleVote(value) {
+        try {
+            await votePost(post.id, value);
+
+            const updatedPost = await getPost(id);
+            setPost(updatedPost);
+        } catch (error) {
+            console.error(error);
         }
-    
-        async function downvote() {
-            try {
-                await client.post(`/posts/${post.id}/vote`, {
-                    value: -1,
-                });
-    
-                window.location.reload();
-            } catch (error) {
-                console.error(error);
-            }
-            // await onVote(post.id, -1);
-        }
+    }
 
     useEffect(() => {
         async function loadData() {
@@ -73,7 +58,6 @@ export default function Post() {
             const newComment = await createComment(id, content);
 
             setComments((current) => [...current, newComment]);
-
             setContent("");
         } catch (error) {
             console.error(error);
@@ -81,71 +65,132 @@ export default function Post() {
     }
 
     if (loading) {
-        return <h1>Loading...</h1>;
+        return (
+            <div className="rounded-xl bg-white p-8 text-center shadow">
+                <h2 className="text-xl font-semibold">
+                    Loading post...
+                </h2>
+            </div>
+        );
     }
 
     if (!post) {
-        return <h1>Post not found.</h1>;
+        return (
+            <div className="rounded-xl bg-white p-8 text-center shadow">
+                <h2 className="text-2xl font-bold">
+                    Post not found
+                </h2>
+            </div>
+        );
     }
 
     return (
-        <div>
-            <h1>{post.title}</h1>
+        <div className="mx-auto max-w-5xl">
+            {/* Post */}
 
-            <p>{post.content}</p>
+            <div className="mb-8 rounded-2xl bg-white p-8 shadow-lg">
+                <Link
+                    to={`/communities/${post.community.name}`}
+                    className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700 hover:bg-blue-200"
+                >
+                    r/{post.community.name}
+                </Link>
 
-            <p>
-                By <strong>{post.author.username}</strong>
-            </p>
+                <h1 className="mt-4 text-4xl font-bold">
+                    {post.title}
+                </h1>
 
-            <div>
-                <button onClick={upvote}>
-                    ▲
-                </button>
+                <p className="mt-5 whitespace-pre-wrap text-lg text-gray-700">
+                    {post.content}
+                </p>
 
-                <strong> {post.score} </strong>
+                <div className="mt-6 flex flex-wrap items-center justify-between border-t pt-4">
+                    <div className="text-sm text-gray-500">
+                        Posted by{" "}
+                        <Link
+                            to={`/users/${post.author.username}`}
+                            className="font-semibold text-gray-700 hover:text-blue-600"
+                        >
+                            @{post.author.username}
+                        </Link>
+                        {" • "}
+                        {new Date(post.created_at).toLocaleDateString()}
+                    </div>
 
-                <button onClick={downvote}>
-                    ▼
-                </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => handleVote(1)}
+                            className="rounded-lg border px-3 py-2 hover:bg-green-100"
+                        >
+                            ▲
+                        </button>
+
+                        <span className="min-w-8 text-center font-bold">
+                            {post.score}
+                        </span>
+
+                        <button
+                            onClick={() => handleVote(-1)}
+                            className="rounded-lg border px-3 py-2 hover:bg-red-100"
+                        >
+                            ▼
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <hr />
+            {/* Comments */}
 
-            <h2>Comments</h2>
+            <div className="mb-8 rounded-2xl bg-white p-6 shadow">
+                <h2 className="mb-6 text-2xl font-bold">
+                    Comments ({comments.length})
+                </h2>
 
-            {comments.length === 0 ? (
-                <p>No comments yet.</p>
-            ) : (
-                comments.map((comment) => (
-                    <CommentCard
-                        key={comment.id}
-                        comment={comment}
+                {comments.length === 0 ? (
+                    <p className="text-gray-500">
+                        No comments yet.
+                    </p>
+                ) : (
+                    <div className="space-y-4">
+                        {comments.map((comment) => (
+                            <CommentCard
+                                key={comment.id}
+                                comment={comment}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Add Comment */}
+
+            <div className="rounded-2xl bg-white p-6 shadow">
+                <h2 className="mb-6 text-2xl font-bold">
+                    Add Comment
+                </h2>
+
+                <form
+                    onSubmit={handleSubmit}
+                    className="space-y-4"
+                >
+                    <textarea
+                        rows={5}
+                        value={content}
+                        onChange={(e) =>
+                            setContent(e.target.value)
+                        }
+                        placeholder="Write your comment..."
+                        className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
                     />
-                ))
-            )}
 
-            <hr />
-
-            <h2>Add Comment</h2>
-
-            <form onSubmit={handleSubmit}>
-                <textarea
-                    rows={4}
-                    cols={60}
-                    value={content}
-                    onChange={(e) =>
-                        setContent(e.target.value)
-                    }
-                />
-
-                <br />
-                <br />
-
-                <button type="submit">
-                    Submit Comment
-                </button>
-            </form>
+                    <button
+                        type="submit"
+                        className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+                    >
+                        Submit Comment
+                    </button>
+                </form>
+            </div>
         </div>
     );
 }

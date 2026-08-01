@@ -1,28 +1,26 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
-import client from "../api/client";
 import PostCard from "../components/PostCard";
+import { useAuth } from "../context/AuthContext";
+
+import {
+    getFeed,
+    votePost,
+} from "../api/posts";
 
 export default function Home() {
+    const { isAuthenticated } = useAuth();
+
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
 
     async function handleVote(postId, value) {
         try {
-            await client.post(`/posts/${postId}/vote`, {
-                value,
-            });
+            await votePost(postId, value);
 
-            setPosts((currentPosts) =>
-                currentPosts.map((post) =>
-                    post.id === postId
-                        ? {
-                            ...post,
-                            score: post.score + value,
-                        }
-                        : post
-                )
-            );
+            const updatedPosts = await getFeed();
+            setPosts(updatedPosts);
         } catch (error) {
             console.error(error);
         }
@@ -31,9 +29,8 @@ export default function Home() {
     useEffect(() => {
         async function loadFeed() {
             try {
-                const response = await client.get("/feed");
-
-                setPosts(response.data);
+                const data = await getFeed();
+                setPosts(data);
             } catch (error) {
                 console.error(error);
             } finally {
@@ -45,23 +42,72 @@ export default function Home() {
     }, []);
 
     if (loading) {
-        return <h1>Loading...</h1>;
+        return (
+            <div className="rounded-xl bg-white p-8 text-center shadow">
+                <h2 className="text-xl font-semibold">
+                    Loading your feed...
+                </h2>
+
+                <p className="mt-2 text-gray-500">
+                    Fetching the latest posts.
+                </p>
+            </div>
+        );
     }
 
     return (
-        <div>
-            <h1>Home Feed</h1>
+        <div className="mx-auto max-w-5xl">
+            <div className="mb-8 flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold">
+                        Home Feed
+                    </h1>
+
+                    <p className="mt-2 text-gray-500">
+                        See the latest posts from your communities.
+                    </p>
+                </div>
+
+                {isAuthenticated && (
+                    <Link
+                        to="/create-post"
+                        className="rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
+                    >
+                        Create Post
+                    </Link>
+                )}
+            </div>
 
             {posts.length === 0 ? (
-                <p>No posts yet.</p>
+                <div className="rounded-xl bg-white p-10 text-center shadow">
+                    <h2 className="text-2xl font-semibold">
+                        No posts yet
+                    </h2>
+
+                    <p className="mt-3 text-gray-500">
+                        Join a community or create the first post to
+                        get the conversation started.
+                    </p>
+
+                    {isAuthenticated && (
+                        <Link
+                            to="/create-post"
+                            className="mt-6 inline-block rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+                        >
+                            Create the First Post
+                        </Link>
+                    )}
+                </div>
             ) : (
-                posts.map((post) => (
-                    <PostCard
-                        key={post.id}
-                        post={post}
-                        onVote={handleVote}
-                    />
-                ))
+                <div className="space-y-6">
+                    {posts.map((post) => (
+                        <PostCard
+                            key={post.id}
+                            post={post}
+                            onVote={handleVote}
+                        />
+                    ))}
+                </div>
             )}
         </div>
     );

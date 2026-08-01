@@ -47,67 +47,97 @@ export default function CreatePost() {
     }
 
     if (loading) {
-        return <h2>Loading communities...</h2>;
+        return (
+            <div className="flex justify-center py-16">
+                <h2 className="text-lg text-gray-600">
+                    Loading communities...
+                </h2>
+            </div>
+        );
     }
 
     return (
-        <div>
-            <h1>Create Post</h1>
+        <div className="flex justify-center py-10">
+            <div className="w-full max-w-3xl rounded-2xl bg-white p-8 shadow-lg">
+                <h1 className="mb-2 text-3xl font-bold">
+                    Create a Post
+                </h1>
 
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Title</label>
+                <p className="mb-8 text-gray-500">
+                    Share something with your community.
+                </p>
 
-                    <input
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                    />
-                </div>
+                <form
+                    onSubmit={handleSubmit}
+                    className="space-y-6"
+                >
+                    <div>
+                        <label className="mb-2 block text-sm font-medium">
+                            Title
+                        </label>
 
-                <br />
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) =>
+                                setTitle(e.target.value)
+                            }
+                            placeholder="Enter a title..."
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+                        />
+                    </div>
 
-                <div>
-                    <label>Content</label>
+                    <div>
+                        <label className="mb-2 block text-sm font-medium">
+                            Community
+                        </label>
 
-                    <textarea
-                        rows={8}
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                    />
-                </div>
-
-                <br />
-
-                <div>
-                    <label>Community</label>
-
-                    <select
-                        value={communityId}
-                        onChange={(e) =>
-                            setCommunityId(e.target.value)
-                        }
-                    >
-                        <option value="">
-                            Select Community
-                        </option>
-
-                        {communities.map((community) => (
-                            <option
-                                key={community.id}
-                                value={community.id}
-                            >
-                                {community.name}
+                        <select
+                            value={communityId}
+                            onChange={(e) =>
+                                setCommunityId(e.target.value)
+                            }
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+                        >
+                            <option value="">
+                                Select a community
                             </option>
-                        ))}
-                    </select>
-                </div>
 
-                <br />
+                            {communities.map((community) => (
+                                <option
+                                    key={community.id}
+                                    value={community.id}
+                                >
+                                    {community.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
-                <button type="submit">
-                    Create Post
-                </button>
-            </form>
+                    <div>
+                        <label className="mb-2 block text-sm font-medium">
+                            Content
+                        </label>
+
+                        <textarea
+                            rows={10}
+                            value={content}
+                            onChange={(e) =>
+                                setContent(e.target.value)
+                            }
+                            placeholder="What's on your mind?"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700"
+                    >
+                        Create Post
+                    </button>
+                </form>
+            </div>
         </div>
     );
 }
