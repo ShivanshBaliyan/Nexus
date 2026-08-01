@@ -157,8 +157,15 @@ class VoteCreate(BaseModel):
 class UserProfilePost(BaseModel):
     id: int
     title: str
+    content: str
+
+    community: PostCommunity
+    author: PostAuthor
+
     score: int
+
     created_at: datetime
+    updated_at: datetime | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -178,7 +185,7 @@ class UserProfileResponse(BaseModel):
     bio: str | None
     created_at: datetime
 
-    posts: list[UserProfilePost]
+    posts: list[PostResponse]
     communities: list[UserProfileCommunity]
 
     model_config = ConfigDict(from_attributes=True)

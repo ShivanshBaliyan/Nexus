@@ -292,9 +292,8 @@ def create_community(
     current_user: User = Depends(get_current_user),
 ):
     existing = db.scalar(
-        select(Community).options(
-            selectinload(Community.creator),
-            selectinload(Community.memberships),
+        select(Community).where(
+            Community.name == community.name
         )
     )
 
@@ -522,6 +521,24 @@ def search(
     return services.search(
         db=db,
         query=q,
+    )
+
+
+@router.get(
+    "/communities/{community_name}/posts",
+    response_model=list[PostResponse],
+)
+def get_community_posts(
+    community_name: str,
+    page: int = 1,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+):
+    return services.get_posts_by_community(
+        db,
+        community_name,
+        page,
+        limit,
     )
 
 

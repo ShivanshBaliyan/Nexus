@@ -230,6 +230,9 @@ def get_comments(
 
     return (
         db.query(Comment)
+        .options(
+            selectinload(Comment.author),
+        )
         .filter(Comment.post_id == post_id)
         .order_by(Comment.created_at.asc())
         .all()
@@ -370,6 +373,8 @@ def get_user_profile(db: Session, username: str):
         select(User)
         .where(User.username == username)
         .options(
+            selectinload(User.posts).selectinload(Post.author),
+            selectinload(User.posts).selectinload(Post.community),
             selectinload(User.posts).selectinload(Post.votes),
             selectinload(User.communities),
         )
