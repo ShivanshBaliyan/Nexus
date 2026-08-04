@@ -312,14 +312,6 @@ AWS_S3_BUCKET=
 
 ---
 
-## Frontend
-
-```env
-VITE_API_URL=
-```
-
----
-
 # API Documentation
 
 Interactive OpenAPI documentation is available at
@@ -411,17 +403,6 @@ Detailed project documentation is available in the `docs` directory.
 - Database Design
 - Deployment Guide
 - Development Roadmap
-
----
-
-# Contributing
-
-Contributions are welcome.
-
-1. Fork the repository.
-2. Create a feature branch.
-3. Commit your changes.
-4. Open a Pull Request.
 
 ---
 
