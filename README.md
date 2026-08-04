@@ -1,7 +1,7 @@
 # Nexus
 
 <p align="center">
-  <img src="docs/images/logo.png" alt="Nexus Logo" width="120">
+  <img src="docs/screenshots/nexusLogo.png" alt="Nexus Logo" width="120">
 </p>
 
 <p align="center">
@@ -243,6 +243,7 @@ Nexus
 │   └── screenshots
 │
 ├── README.md
+
 ```
 
 ---
