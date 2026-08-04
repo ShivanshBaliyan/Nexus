@@ -12,7 +12,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 from app.core import get_db
 from app.auth import get_current_user
-from app.models import Community, User
+from app.models import (
+    User,
+    Post,
+    Comment,
+    Community,
+    Vote,
+    CommunityMember,
+)
 from app.schemas import (
     UserCreate, 
     UserResponse, 
@@ -29,6 +36,8 @@ from app.schemas import (
     VoteCreate,
     UserProfileResponse,
     SearchResponse,
+    UserUpdate,
+    AvatarUploadResponse,
 )
 from app.services import (
     register_user, 
@@ -43,8 +52,8 @@ from app.services import (
     update_comment,
     delete_comment,
 )
-from app.auth import get_current_user
-from app.models import User
+from app.auth import get_current_user, get_current_user_optional
+from app.storage import generate_avatar_upload_url, generate_post_upload_url
 
 router = APIRouter()
 
@@ -84,6 +93,22 @@ def get_me(
     current_user: User = Depends(get_current_user),
 ):
     return current_user
+
+
+@router.put(
+    "/users/me",
+    response_model=UserResponse,
+)
+def edit_profile(
+    user_data: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return services.update_profile(
+        db,
+        current_user,
+        user_data,
+    )
 
 
 @router.post("/posts", response_model=PostResponse)
@@ -340,9 +365,12 @@ def get_communities(
 def get_community(
     name: str,
     db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_current_user_optional),
 ):
     community = db.scalar(
-        select(Community).options(
+        select(Community)
+        .where(Community.name == name)
+        .options(
             selectinload(Community.creator),
             selectinload(Community.memberships),
         )
@@ -354,7 +382,28 @@ def get_community(
             detail="Community not found.",
         )
 
-    return community
+    is_member = False
+
+    if current_user:
+        membership = db.scalar(
+            select(CommunityMember).where(
+                CommunityMember.user_id == current_user.id,
+                CommunityMember.community_id == community.id,
+            )
+        )
+
+        is_member = membership is not None
+
+    return {
+        "id": community.id,
+        "name": community.name,
+        "title": community.title,
+        "description": community.description,
+        "creator": community.creator,
+        "member_count": len(community.memberships),
+        "is_member": is_member,
+        "created_at": community.created_at,
+    }
 
 
 @router.get(
@@ -497,15 +546,15 @@ def leave_community(
     response_model=list[PostResponse],
 )
 def get_feed(
-    skip: int = 0,
-    limit: int = 10,
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     return services.get_feed(
         db=db,
         current_user=current_user,
-        skip=skip,
+        page=page,
         limit=limit,
     )
 
@@ -540,5 +589,27 @@ def get_community_posts(
         page,
         limit,
     )
+
+
+@router.post(
+    "/users/me/avatar/upload-url",
+    response_model=AvatarUploadResponse,
+)
+def get_avatar_upload_url(
+    extension: str,
+    current_user: User = Depends(get_current_user),
+):
+    return generate_avatar_upload_url(extension)
+
+
+@router.post(
+    "/posts/upload-url",
+    response_model=AvatarUploadResponse,
+)
+def get_post_upload_url(
+    extension: str,
+    current_user: User = Depends(get_current_user),
+):
+    return generate_post_upload_url(extension)
 
 

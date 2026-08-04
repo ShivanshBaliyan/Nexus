@@ -18,6 +18,7 @@ from app.schemas import (
     CommentCreate,
     CommentUpdate,
     VoteCreate,
+    UserUpdate,
 )
 from app.auth import (
     hash_password,
@@ -83,6 +84,26 @@ def login_user(db: Session, form_data: OAuth2PasswordRequestForm) -> str:
     return token
 
 
+def update_profile(
+    db: Session,
+    current_user: User,
+    user_data: UserUpdate,
+):
+    if user_data.display_name is not None:
+        current_user.display_name = user_data.display_name
+
+    if user_data.bio is not None:
+        current_user.bio = user_data.bio
+
+    if user_data.avatar_url is not None:
+        current_user.avatar_url = user_data.avatar_url
+
+    db.commit()
+    db.refresh(current_user)
+
+    return current_user
+
+
 def create_post(
     db: Session,
     post_data: PostCreate,
@@ -99,6 +120,7 @@ def create_post(
     post = Post(
         title=post_data.title,
         content=post_data.content,
+        image_url=post_data.image_url,
         author_id=current_user.id,
         community_id=post_data.community_id,
     )
@@ -171,6 +193,8 @@ def update_post(
 
     post.title = post_data.title
     post.content = post_data.content
+    post.community_id = post_data.community_id
+    post.image_url = post_data.image_url
 
     db.commit()
     db.refresh(post)
@@ -210,6 +234,7 @@ def create_comment(
         content=comment_data.content,
         author_id=current_user.id,
         post_id=post.id,
+        parent_id=comment_data.parent_id,
     )
 
     db.add(comment)
@@ -228,7 +253,7 @@ def get_comments(
     if post is None:
         raise ValueError("Post not found")
 
-    return (
+    comments = (
         db.query(Comment)
         .options(
             selectinload(Comment.author),
@@ -237,6 +262,27 @@ def get_comments(
         .order_by(Comment.created_at.asc())
         .all()
     )
+
+    for comment in comments:
+        comment.replies = []
+
+    comment_map = {
+        comment.id: comment
+        for comment in comments
+    }
+
+    root_comments = []
+
+    for comment in comments:
+        if comment.parent_id is None:
+            root_comments.append(comment)
+        else:
+            parent = comment_map.get(comment.parent_id)
+
+            if parent:
+                parent.replies.append(comment)
+
+    return root_comments
 
 
 def update_comment(
@@ -376,14 +422,35 @@ def get_user_profile(db: Session, username: str):
             selectinload(User.posts).selectinload(Post.author),
             selectinload(User.posts).selectinload(Post.community),
             selectinload(User.posts).selectinload(Post.votes),
+
             selectinload(User.communities),
+
+            selectinload(User.memberships).selectinload(
+                CommunityMember.community
+            ),
         )
     )
 
     if user is None:
         raise ValueError("User not found")
 
-    return user
+    return {
+        "id": user.id,
+        "username": user.username,
+        "display_name": user.display_name,
+        "bio": user.bio,
+        "avatar_url": user.avatar_url,   # ← ADD THIS
+        "created_at": user.created_at,
+
+        "posts": user.posts,
+
+        "created_communities": user.communities,
+
+        "joined_communities": [
+            membership.community
+            for membership in user.memberships
+        ],
+    }
 
 
 def join_community(
@@ -450,7 +517,7 @@ def leave_community(
 def get_feed(
     db: Session,
     current_user: User,
-    skip: int = 0,
+    page: int = 1,
     limit: int = 10,
 ):
     community_ids = db.scalars(
@@ -462,6 +529,8 @@ def get_feed(
     if not community_ids:
         return []
 
+    offset = (page - 1) * limit
+
     posts = db.scalars(
         select(Post)
         .where(Post.community_id.in_(community_ids))
@@ -471,7 +540,7 @@ def get_feed(
             selectinload(Post.votes),
         )
         .order_by(Post.created_at.desc())
-        .offset(skip)
+        .offset(offset)
         .limit(limit)
     ).all()
 

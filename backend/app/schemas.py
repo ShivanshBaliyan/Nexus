@@ -14,6 +14,10 @@ class UserResponse(BaseModel):
     username: str
     email: EmailStr
 
+    display_name: str | None
+    bio: str | None
+    avatar_url: str | None
+
     model_config = {
         "from_attributes": True
     }
@@ -22,6 +26,12 @@ class UserResponse(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+
+class UserUpdate(BaseModel):
+    display_name: str | None = None
+    bio: str | None = None
+    avatar_url: str | None = None
 
 
 class Token(BaseModel):
@@ -42,6 +52,8 @@ class PostCreate(BaseModel):
         description="Post content",
     )
 
+    image_url: str | None = None
+
     community_id: int
 
 
@@ -49,9 +61,13 @@ class PostResponse(BaseModel):
     id: int
     title: str
     content: str
+    image_url: str | None
+
     community: PostCommunity
     author: PostAuthor
+
     score: int
+
     created_at: datetime
     updated_at: datetime | None
 
@@ -68,6 +84,8 @@ class PostUpdate(BaseModel):
         min_length=1,
         max_length=10000,
     )
+
+    image_url: str | None = None
 
 
 class PostAuthor(BaseModel):
@@ -100,6 +118,8 @@ class CommentCreate(BaseModel):
         max_length=5000,
     )
 
+    parent_id: int | None = None
+
 
 class CommentUpdate(BaseModel):
     content: str = Field(
@@ -113,10 +133,16 @@ class CommentResponse(BaseModel):
     content: str
     author: CommentAuthor
     post_id: int
+    parent_id: int | None
+
     created_at: datetime
     updated_at: datetime
 
+    replies: list["CommentResponse"] = []
+
     model_config = ConfigDict(from_attributes=True)
+
+CommentResponse.model_rebuild()
 
 
 class CommunityCreate(BaseModel):
@@ -144,6 +170,8 @@ class CommunityResponse(BaseModel):
     creator: UserResponse
 
     member_count: int
+
+    is_member: bool = False
 
     created_at: datetime
 
@@ -184,9 +212,12 @@ class UserProfileResponse(BaseModel):
     display_name: str | None
     bio: str | None
     created_at: datetime
+    avatar_url: str | None
 
     posts: list[PostResponse]
-    communities: list[UserProfileCommunity]
+
+    created_communities: list[UserProfileCommunity]
+    joined_communities: list[UserProfileCommunity]
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -219,5 +250,11 @@ class SearchResponse(BaseModel):
     users: list[SearchUser]
     communities: list[SearchCommunity]
     posts: list[SearchPost]
+
+
+class AvatarUploadResponse(BaseModel):
+    upload_url: str
+    public_url: str
+    key: str
 
 

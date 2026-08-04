@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 import { loginUser } from "../api/auth";
 import { getCurrentUser } from "../api/users";
@@ -29,7 +30,7 @@ export default function Login() {
             navigate("/");
         } catch (error) {
             console.error(error);
-            alert("Invalid username or password.");
+            toast.error("Invalid username or password.");
         }
     }
 

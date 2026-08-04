@@ -28,9 +28,19 @@ export default function PostCard({ post, onVote }) {
                 </h2>
             </Link>
 
+            {/* Image */}
+
+            {post.image_url && (
+                <img
+                    src={post.image_url}
+                    alt={post.title}
+                    className="mb-4 max-h-125 w-full rounded-xl border object-cover"
+                />
+            )}
+
             {/* Content */}
 
-            <p className="mt-3 whitespace-pre-wrap text-gray-700">
+            <p className="mb-4 whitespace-pre-wrap text-gray-700">
                 {post.content}
             </p>
 

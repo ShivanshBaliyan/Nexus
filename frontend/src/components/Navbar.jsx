@@ -41,7 +41,7 @@ export default function Navbar() {
                         <>
                             <Link
                                 to="/create-post"
-                                className="rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+                                className="rounded-lg text-white bg-blue-600 px-4 py-2 transition hover:bg-blue-700"
                             >
                                 Create Post
                             </Link>

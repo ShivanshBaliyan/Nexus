@@ -9,6 +9,8 @@ import Profile from "./pages/Profile";
 import Search from "./pages/Search";
 import CreatePost from "./pages/CreatePost";
 import CreateCommunity from "./pages/CreateCommunity";
+import EditProfile from "./pages/EditProfile";
+import EditPost from "./pages/EditPost";
 
 import Layout from "./components/Layout";
 
@@ -87,6 +89,17 @@ export default function App() {
                         </Layout>
                     }
                 />
+
+                <Route
+                    path="/profile/edit"
+                    element={<EditProfile />}
+                />
+
+                <Route
+                    path="/posts/:id/edit"
+                    element={<EditPost />}
+                />
+                
             </Routes>
         </BrowserRouter>
     );

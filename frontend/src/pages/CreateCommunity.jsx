@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 import { createCommunity } from "../api/communities";
 
@@ -25,9 +26,9 @@ export default function CreateCommunity() {
             console.error(error);
 
             if (error.response?.data?.detail) {
-                alert(error.response.data.detail);
+                toast.error(error.response.data.detail);
             } else {
-                alert("Failed to create community.");
+                toast.error("Failed to create community.");
             }
         }
     }

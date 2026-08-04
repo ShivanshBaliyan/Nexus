@@ -164,6 +164,11 @@ class Post(Base):
         back_populates="posts",
     )
 
+    image_url: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+
     votes: Mapped[list["Vote"]] = relationship(
         back_populates="post",
         cascade="all, delete-orphan",
@@ -194,6 +199,11 @@ class Comment(Base):
         nullable=False,
     )
 
+    parent_id: Mapped[int | None] = mapped_column(
+        ForeignKey("comments.id"),
+        nullable=True,
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
@@ -213,6 +223,18 @@ class Comment(Base):
 
     post: Mapped["Post"] = relationship(
         back_populates="comments",
+    )
+
+    parent: Mapped["Comment | None"] = relationship(
+        "Comment",
+        remote_side=[id],
+        back_populates="replies",
+    )
+
+    replies: Mapped[list["Comment"]] = relationship(
+        "Comment",
+        back_populates="parent",
+        cascade="all, delete-orphan",
     )
 
 

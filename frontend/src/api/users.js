@@ -12,3 +12,14 @@ export async function getUserProfile(username) {
 
     return response.data;
 }
+
+export async function updateProfile(profile) {
+    const response = await client.put(
+        "/users/me",
+        profile
+    );
+
+    return response.data;
+}
+
+

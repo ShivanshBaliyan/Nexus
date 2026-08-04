@@ -1,66 +1,123 @@
 # ==========================
+# General
+# ==========================
+
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+*.swo
+
+# ==========================
 # Python
 # ==========================
+
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
 *.so
 
-# Virtual environments
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+.coverage
+htmlcov/
+
 .venv/
 venv/
 env/
 
-# Environment variables
+# ==========================
+# FastAPI
+# ==========================
+
+instance/
+uploads/
+
+# ==========================
+# Environment
+# ==========================
+
 .env
-
-# IDEs
-.vscode/
-.idea/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Python testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Type checking
-.mypy_cache/
-
-# Linting
-.ruff_cache/
-
-# Packaging
-build/
-dist/
-*.egg-info/
-
-# Logs
-*.log
+.env.*
+!.env.example
 
 # ==========================
 # Alembic
 # ==========================
-# Keep migration files!
-# (Do NOT ignore alembic/versions)
+
+alembic.ini.bak
 
 # ==========================
-# Frontend (React/Vite)
+# PostgreSQL
 # ==========================
-frontend/node_modules/
-frontend/dist/
 
-# npm
+*.sqlite3
+*.db
+
+# ==========================
+# Node
+# ==========================
+
+node_modules/
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
 # ==========================
-# Misc
+# Vite
 # ==========================
-*.sqlite3
+
+frontend/dist/
+frontend/.vite/
+
+# ==========================
+# IDE
+# ==========================
+
+.vscode/
+.idea/
+
+# ==========================
+# Docker
+# ==========================
+
+docker-data/
+
+# ==========================
+# Build
+# ==========================
+
+build/
+dist/
+
+# ==========================
+# AWS
+# ==========================
+
+.aws/
+
+# ==========================
+# Coverage
+# ==========================
+
+coverage/
+
+# ==========================
+# OS
+# ==========================
+
+Desktop.ini
+
+# ==========================
+# Secrets
+# ==========================
+
+*.pem
+*.key
+*.crt

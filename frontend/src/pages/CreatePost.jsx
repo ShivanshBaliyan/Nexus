@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 import { getCommunities } from "../api/communities";
 import { createPost } from "../api/posts";
+import PostImageUpload from "../components/PostImageUpload";
 
 export default function CreatePost() {
     const navigate = useNavigate();
@@ -10,7 +12,7 @@ export default function CreatePost() {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [communityId, setCommunityId] = useState("");
-
+    const [imageUrl, setImageUrl] = useState("");
     const [communities, setCommunities] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -36,13 +38,16 @@ export default function CreatePost() {
             await createPost({
                 title,
                 content,
+                image_url: imageUrl,
                 community_id: Number(communityId),
             });
+
+            toast.success("Post created successfully!");
 
             navigate("/");
         } catch (error) {
             console.error(error);
-            alert("Failed to create post.");
+            toast.error("Failed to create post.");
         }
     }
 
@@ -129,6 +134,11 @@ export default function CreatePost() {
                             className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
                         />
                     </div>
+
+                    <PostImageUpload
+                        imageUrl={imageUrl}
+                        onUploaded={setImageUrl}
+                    />
 
                     <button
                         type="submit"

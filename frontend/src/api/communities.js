@@ -10,9 +10,19 @@ export async function getCommunity(name) {
     return response.data;
 }
 
-export async function getCommunityPosts(name) {
+export async function getCommunityPosts(
+    name,
+    page = 1,
+    limit = 10
+) {
     const response = await client.get(
-        `/communities/${name}/posts`
+        `/communities/${name}/posts`,
+        {
+            params: {
+                page,
+                limit,
+            },
+        }
     );
 
     return response.data;

@@ -4,6 +4,8 @@ import { Link, useParams } from "react-router-dom";
 import {
     getCommunity,
     getCommunityPosts,
+    joinCommunity,
+    leaveCommunity,
 } from "../api/communities";
 
 import { votePost } from "../api/posts";
@@ -25,6 +27,30 @@ export default function Community() {
 
             const updatedPosts = await getCommunityPosts(name);
             setPosts(updatedPosts);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function handleMembership() {
+        try {
+            if (community.is_member) {
+                await leaveCommunity(name);
+
+                setCommunity((current) => ({
+                    ...current,
+                    is_member: false,
+                    member_count: current.member_count - 1,
+                }));
+            } else {
+                await joinCommunity(name);
+
+                setCommunity((current) => ({
+                    ...current,
+                    is_member: true,
+                    member_count: current.member_count + 1,
+                }));
+            }
         } catch (error) {
             console.error(error);
         }
@@ -100,12 +126,27 @@ export default function Community() {
                     </div>
 
                     {isAuthenticated && (
-                        <Link
-                            to="/create-post"
-                            className="rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
-                        >
-                            Create Post
-                        </Link>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={handleMembership}
+                                className={
+                                    community.is_member
+                                        ? "rounded-lg bg-gray-200 px-5 py-3 font-semibold hover:bg-gray-300"
+                                        : "rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
+                                }
+                            >
+                                {community.is_member
+                                    ? "Joined ✓"
+                                    : "Join"}
+                            </button>
+
+                            <Link
+                                to="/create-post"
+                                className="rounded-lg bg-green-600 px-5 py-3 font-semibold text-white hover:bg-green-700"
+                            >
+                                Create Post
+                            </Link>
+                        </div>
                     )}
                 </div>
             </div>

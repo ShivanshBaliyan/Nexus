@@ -19,6 +19,11 @@ from app.models import User
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 password_hasher = PasswordHash.recommended()
 
+oauth2_scheme_optional = OAuth2PasswordBearer(
+    tokenUrl="/auth/login",
+    auto_error=False,
+)
+
 
 def hash_password(password: str) -> str:
     return password_hasher.hash(password)
@@ -84,3 +89,23 @@ def get_current_user(
         )
 
     return user
+
+
+def get_current_user_optional(
+    token: str | None = Depends(oauth2_scheme_optional),
+    db: Session = Depends(get_db),
+):
+    if token is None:
+        return None
+
+    payload = decode_access_token(token)
+
+    if not payload:
+        return None
+
+    user_id = payload.get("sub")
+
+    if user_id is None:
+        return None
+
+    return db.get(User, int(user_id))
