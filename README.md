@@ -11,7 +11,6 @@ A modern Reddit-inspired social discussion platform built with <strong>React</st
 <p align="center">
   <a href="https://nexus.yourdomain.com">🌐 Live Demo</a> •
   <a href="https://api.nexus.yourdomain.com/docs">📖 API Documentation</a> •
-  <a href="docs/deployment.md">🚀 Deployment Guide</a>
 </p>
 
 ---
@@ -31,7 +30,7 @@ The project demonstrates end-to-end application development, including authentic
 | Service | URL |
 |---------|-----|
 | Frontend | https://nexus.yourdomain.com |
-| Backend API | https://api.nexus.yourdomain.com |
+| Backend | https://api.nexus.yourdomain.com |
 | API Docs | https://api.nexus.yourdomain.com/docs |
 
 ---
@@ -241,16 +240,9 @@ Nexus
 │   └── package.json
 │
 ├── docs
-│   ├── architecture.md
-│   ├── deployment.md
-│   ├── api.md
-│   ├── database.md
-│   ├── roadmap.md
 │   └── screenshots
 │
-├── docker-compose.yml
 ├── README.md
-└── LICENSE
 ```
 
 ---
