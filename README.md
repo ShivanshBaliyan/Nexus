@@ -360,18 +360,6 @@ Production deployment includes:
 
 ---
 
-# Documentation
-
-Detailed project documentation is available in the `docs` directory.
-
-- Architecture
-- API Reference
-- Database Design
-- Deployment Guide
-- Development Roadmap
-
----
-
 # Author
 
 GitHub: https://github.com/ShivanshBaliyan/Nexus.git
