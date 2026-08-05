@@ -9,8 +9,8 @@ A modern Reddit-inspired social discussion platform built with <strong>React</st
 </p>
 
 <p align="center">
-  <a href="https://nexus.yourdomain.com">🌐 Live Demo</a> •
-  <a href="https://api.nexus.yourdomain.com/docs">📖 API Documentation</a> •
+  <a href="https://nexus-amber-ten-36.vercel.app">🌐 Live Demo</a> •
+  <a href="https://nexus-szab.onrender.com/docs">📖 API Documentation</a> •
 </p>
 
 ---
@@ -29,9 +29,9 @@ The project demonstrates end-to-end application development, including authentic
 
 | Service | URL |
 |---------|-----|
-| Frontend | https://nexus.yourdomain.com |
-| Backend | https://api.nexus.yourdomain.com |
-| API Docs | https://api.nexus.yourdomain.com/docs |
+| Frontend | https://nexus-amber-ten-36.vercel.app |
+| Backend | https://nexus-szab.onrender.com |
+| API Docs | https://nexus-szab.onrender.com/docs |
 
 ---
 
@@ -253,7 +253,7 @@ Nexus
 ## Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/nexus.git
+git clone https://github.com/ShivanshBaliyan/Nexus.git
 
 cd nexus
 ```
@@ -290,34 +290,12 @@ npm run dev
 
 ---
 
-# Environment Variables
-
-## Backend
-
-```env
-DATABASE_URL=
-
-SECRET_KEY=
-
-ACCESS_TOKEN_EXPIRE_MINUTES=
-
-AWS_ACCESS_KEY_ID=
-
-AWS_SECRET_ACCESS_KEY=
-
-AWS_REGION=
-
-AWS_S3_BUCKET=
-```
-
----
-
 # API Documentation
 
 Interactive OpenAPI documentation is available at
 
 ```
-https://api.nexus.yourdomain.com/docs
+https://nexus-szab.onrender.com/docs
 ```
 
 ---
@@ -336,12 +314,6 @@ Major entities include:
 - Votes
 - Notifications
 
-See:
-
-```
-docs/database.md
-```
-
 ---
 
 # Deployment
@@ -355,12 +327,6 @@ Production deployment includes:
 - PostgreSQL
 - AWS S3
 - GitHub Actions CI/CD
-
-Deployment documentation:
-
-```
-docs/deployment.md
-```
 
 ---
 
@@ -408,8 +374,8 @@ Detailed project documentation is available in the `docs` directory.
 
 # Author
 
-GitHub: https://github.com/yourusername
+GitHub: https://github.com/ShivanshBaliyan/Nexus.git
 
-LinkedIn: https://linkedin.com/in/yourprofile
+LinkedIn: https://www.linkedin.com/in/shivansh-baliyan/
 
-Portfolio: https://yourportfolio.com
+Portfolio(Coming Soon): https://yourportfolio.com
